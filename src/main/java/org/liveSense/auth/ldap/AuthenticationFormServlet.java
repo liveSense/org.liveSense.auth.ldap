@@ -35,8 +35,6 @@ public class AuthenticationFormServlet extends AbstractAuthenticationFormServlet
     /**
      * This constant is used to provide the service registration property
      * indicating to pass requests to this servlet unauthenticated.
-     *
-     * @scr.property name="sling.auth.requirements"
      */
     @SuppressWarnings("unused")
     @Property(name="sling.auth.requirements")

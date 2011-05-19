@@ -151,10 +151,11 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
      */
     private static final String DEFAULT_AUTH_STORAGE = AUTH_STORAGE_COOKIE;
 
-    @Property(value = DEFAULT_AUTH_STORAGE, options = {
+    private static final String PAR_AUTH_STORAGE = "ldap.auth.storage";
+    @Property(name=PAR_AUTH_STORAGE, value = DEFAULT_AUTH_STORAGE, options = {
         @PropertyOption(name = AUTH_STORAGE_COOKIE, value = "Cookie"),
         @PropertyOption(name = AUTH_STORAGE_SESSION_ATTRIBUTE, value = "Session Attribute") })
-    private static final String PAR_AUTH_STORAGE = "ldap.auth.storage";
+    private String authStorageType;
 
     /**
      * The default Cookie or session attribute name
@@ -889,9 +890,9 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
             defaultCookieDomain = null;
         }
 
-        final String authStorage = OsgiUtil.toString(
+        authStorageType = OsgiUtil.toString(
             properties.get(PAR_AUTH_STORAGE), DEFAULT_AUTH_STORAGE);
-        if (AUTH_STORAGE_SESSION_ATTRIBUTE.equals(authStorage)) {
+        if (AUTH_STORAGE_SESSION_ATTRIBUTE.equals(authStorageType)) {
 
             this.authStorage = new SessionStorage(authName);
             log.info("Using HTTP Session store with attribute name {}",

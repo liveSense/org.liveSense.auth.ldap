@@ -53,7 +53,7 @@
 				<configuration>
 					<instructions>
 						<Export-Package>
-							org.liveSense.auth.ldap.*;version=${pom.version}
+							org.liveSense.auth.ldap.*;version=${project.version}
 						</Export-Package>
 						<Include-Resource>
 							{maven-resources}

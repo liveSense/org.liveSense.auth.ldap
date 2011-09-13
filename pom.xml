@@ -30,7 +30,6 @@
       <url>https://github.com/liveSense/org.liveSense.service.securityManager</url>
   </scm>  
 
-	<groupId>org.liveSense</groupId>
 	<artifactId>org.liveSense.auth.ldap</artifactId>
 	<packaging>bundle</packaging>
 	<version>1.0.0-SNAPSHOT</version>

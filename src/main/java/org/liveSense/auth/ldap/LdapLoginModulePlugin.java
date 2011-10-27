@@ -63,9 +63,8 @@ class LdapLoginModulePlugin implements LoginModulePlugin {
     /**
      * This implementation does nothing.
      */
-    @SuppressWarnings("unchecked")
     public void doInit(final CallbackHandler callbackHandler,
-            final Session session, final Map options) {
+            final Session session, @SuppressWarnings("rawtypes") final Map options) {
         return;
     }
 
@@ -119,8 +118,7 @@ class LdapLoginModulePlugin implements LoginModulePlugin {
     /**
      * This implementation does nothing.
      */
-    @SuppressWarnings("unchecked")
-    public void addPrincipals(final Set principals) {
+    public void addPrincipals(@SuppressWarnings("rawtypes") final Set principals) {
     }
 
     /**

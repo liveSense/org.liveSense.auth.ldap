@@ -35,7 +35,6 @@ import javax.jcr.SimpleCredentials;
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -66,7 +65,7 @@ import org.apache.sling.auth.core.spi.AbstractAuthenticationHandler;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.auth.core.spi.DefaultAuthenticationFeedbackHandler;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.liveSense.auth.FormReason;
 import org.osgi.framework.BundleContext;
@@ -877,20 +876,20 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
 
         Dictionary<?, ?> properties = componentContext.getProperties();
 
-        this.loginForm = OsgiUtil.toString(properties.get(PAR_LOGIN_FORM),
+        this.loginForm = PropertiesUtil.toString(properties.get(PAR_LOGIN_FORM),
             AuthenticationFormServlet.SERVLET_PATH);
         log.info("Login Form URL {}", loginForm);
 
-        final String authName = OsgiUtil.toString(
+        final String authName = PropertiesUtil.toString(
             properties.get(PAR_AUTH_NAME), DEFAULT_AUTH_NAME);
 
-        String defaultCookieDomain = OsgiUtil.toString(
+        String defaultCookieDomain = PropertiesUtil.toString(
             properties.get(PAR_DEFAULT_COOKIE_DOMAIN), "");
         if (defaultCookieDomain.length() == 0) {
             defaultCookieDomain = null;
         }
 
-        authStorageType = OsgiUtil.toString(
+        authStorageType = PropertiesUtil.toString(
             properties.get(PAR_AUTH_STORAGE), DEFAULT_AUTH_STORAGE);
         if (AUTH_STORAGE_SESSION_ATTRIBUTE.equals(authStorageType)) {
 
@@ -905,12 +904,12 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
 
         }
 
-        this.attrCookieAuthData = OsgiUtil.toString(
+        this.attrCookieAuthData = PropertiesUtil.toString(
             properties.get(PAR_CREDENTIALS_ATTRIBUTE_NAME),
             DEFAULT_CREDENTIALS_ATTRIBUTE_NAME);
         log.info("Setting Auth Data attribute name {}", attrCookieAuthData);
 
-        int timeoutMinutes = OsgiUtil.toInteger(
+        int timeoutMinutes = PropertiesUtil.toInteger(
             properties.get(PAR_AUTH_TIMEOUT), DEFAULT_AUTH_TIMEOUT);
         if (timeoutMinutes < 1) {
             timeoutMinutes = DEFAULT_AUTH_TIMEOUT;
@@ -918,11 +917,11 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
         log.info("Setting session timeout {} minutes", timeoutMinutes);
         this.sessionTimeout = MINUTES * timeoutMinutes;
 
-        final String tokenFileName = OsgiUtil.toString(
+        final String tokenFileName = PropertiesUtil.toString(
             properties.get(PAR_TOKEN_FILE), DEFAULT_TOKEN_FILE);
         final File tokenFile = getTokenFile(tokenFileName,
             componentContext.getBundleContext());
-        final boolean fastSeed = OsgiUtil.toBoolean(
+        final boolean fastSeed = PropertiesUtil.toBoolean(
             properties.get(PAR_TOKEN_FAST_SEED), DEFAULT_TOKEN_FAST_SEED);
         log.info("Storing tokens in {}", tokenFile.getAbsolutePath());
         this.tokenStore = new TokenStore(tokenFile, sessionTimeout, fastSeed);
@@ -936,31 +935,31 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
             log.debug("dump", t);
         }
 
-        this.includeLoginForm = OsgiUtil.toBoolean(properties.get(PAR_INCLUDE_FORM), DEFAULT_INCLUDE_FORM);
+        this.includeLoginForm = PropertiesUtil.toBoolean(properties.get(PAR_INCLUDE_FORM), DEFAULT_INCLUDE_FORM);
 
-        this.loginAfterExpire = OsgiUtil.toBoolean(properties.get(PAR_LOGIN_AFTER_EXPIRE), DEFAULT_LOGIN_AFTER_EXPIRE);
+        this.loginAfterExpire = PropertiesUtil.toBoolean(properties.get(PAR_LOGIN_AFTER_EXPIRE), DEFAULT_LOGIN_AFTER_EXPIRE);
         
-        this.identityProperty = OsgiUtil.toString(
+        this.identityProperty = PropertiesUtil.toString(
                 properties.get(PAR_LDAP_ID_IDENTIFIER_PROPERTY),
                 DEFAULT_LDAP_ID_IDENTIFIER_PROPERTY);
             log.info("Setting Identity attribute name {}", identityProperty);
   
-        this.attrLdapId = OsgiUtil.toString(
+        this.attrLdapId = PropertiesUtil.toString(
                 properties.get(PAR_LDAP_USER_ATTR),
                 DEFAULT_LDAP_USER_ATTR);
             log.info("Setting Ldap Id attribute name {}", attrLdapId);
 
-        this.ldapUrl = OsgiUtil.toString(
+        this.ldapUrl = PropertiesUtil.toString(
                 properties.get(PAR_LDAP_URL),
                 DEFAULT_LDAP_URL);
             log.info("Setting Ldap Url name {}", ldapUrl);
 
-        this.ldapBase = OsgiUtil.toString(
+        this.ldapBase = PropertiesUtil.toString(
                 properties.get(PAR_LDAP_BASE),
                 DEFAULT_LDAP_BASE);
             log.info("Setting Ldap Base name {}", ldapBase);
 
-        this.ldapAuthenticationType = OsgiUtil.toString(
+        this.ldapAuthenticationType = PropertiesUtil.toString(
                 properties.get(PAR_LDAP_AUTHENTICATION_TYPE),
                 DEFAULT_LDAP_AUTHENTICATION_TYPE);
             log.info("Setting Ldap Authentication Type {}", ldapAuthenticationType);

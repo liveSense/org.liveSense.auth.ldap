@@ -33,7 +33,7 @@
 	<artifactId>org.liveSense.auth.ldap</artifactId>
 	<packaging>bundle</packaging>
 	<version>1.0.0-SNAPSHOT</version>
-	<name>liveSense LDAP authentication service</name>
+	<name>liveSense :: Service :: Authentication :: LDAP</name>
 	<description>
 		liveSense LDAP authentication module.
 	</description>

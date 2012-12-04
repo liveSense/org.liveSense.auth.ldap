@@ -372,7 +372,7 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
     
     private Session session;
 
-    @Reference
+	@Reference(cardinality=ReferenceCardinality.MANDATORY_UNARY, policy=ReferencePolicy.DYNAMIC)
     private SlingRepository repository;
 
     /**

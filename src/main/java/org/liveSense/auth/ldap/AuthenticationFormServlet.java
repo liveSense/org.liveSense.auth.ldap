@@ -7,6 +7,7 @@ import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.auth.core.spi.AbstractAuthenticationFormServlet;
+import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.liveSense.auth.FormReason;
 
 
@@ -49,14 +50,15 @@ public class AuthenticationFormServlet extends AbstractAuthenticationFormServlet
      * @return The "translated" reason to render the login form or an empty
      *         string if there is no specific reason
      */
-    protected String getReason(final HttpServletRequest request) {
+    @Override
+	protected String getReason(final HttpServletRequest request) {
         // return the resource attribute if set to a non-empty string
-        Object resObj = request.getAttribute(LdapAuthenticationHandler.FAILURE_REASON);
+        Object resObj = request.getAttribute(AuthenticationHandler.FAILURE_REASON);
         if (resObj instanceof FormReason) {
             return ((FormReason) resObj).toString();
         }
 
-        final String reason = request.getParameter(LdapAuthenticationHandler.FAILURE_REASON);
+        final String reason = request.getParameter(AuthenticationHandler.FAILURE_REASON);
         if (reason != null) {
             try {
                 return FormReason.valueOf(reason).toString();

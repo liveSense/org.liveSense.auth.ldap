@@ -29,7 +29,7 @@ class LdapLoginModulePlugin implements LoginModulePlugin {
      * Creates an instance of this class and registers it as a
      * <code>LoginModulePlugin</code> service to handle login requests with
      * <code>SimpleCredentials</code> provided by the
-     * {@link OpenIDAuthenticationHandler}.
+     * {@link LdapAuthenticationHandler}.
      *
      * @param authHandler The {@link LdapAuthenticationHandler} providing
      *            support to validate the credentials
@@ -63,7 +63,8 @@ class LdapLoginModulePlugin implements LoginModulePlugin {
     /**
      * This implementation does nothing.
      */
-    public void doInit(final CallbackHandler callbackHandler,
+    @Override
+	public void doInit(final CallbackHandler callbackHandler,
             final Session session, @SuppressWarnings("rawtypes") final Map options) {
         return;
     }
@@ -77,7 +78,8 @@ class LdapLoginModulePlugin implements LoginModulePlugin {
      *
      * @see CookieAuthenticationHandler#hasAuthData(Credentials)
      */
-    public boolean canHandle(Credentials credentials) {
+    @Override
+	public boolean canHandle(Credentials credentials) {
     	return authHandler.hasAuthData(credentials); 
     }
 
@@ -89,10 +91,12 @@ class LdapLoginModulePlugin implements LoginModulePlugin {
      * this method should only be called if {@link #canHandle(Credentials)}
      * returns <code>true</code>) and the authentication data is valid.
      */
-    public AuthenticationPlugin getAuthentication(final Principal principal,
+    @Override
+	public AuthenticationPlugin getAuthentication(final Principal principal,
             final Credentials creds) {
         return new AuthenticationPlugin() {
-            public boolean authenticate(Credentials credentials)
+            @Override
+			public boolean authenticate(Credentials credentials)
                     throws RepositoryException {
 
             	boolean valid = authHandler.isCookieValid(credentials);
@@ -111,21 +115,24 @@ class LdapLoginModulePlugin implements LoginModulePlugin {
      * Returns <code>null</code> to have the <code>DefaultLoginModule</code>
      * provide a principal based on an existing user defined in the repository.
      */
-    public Principal getPrincipal(final Credentials credentials) {
+    @Override
+	public Principal getPrincipal(final Credentials credentials) {
 	return null;
     }
 
     /**
      * This implementation does nothing.
      */
-    public void addPrincipals(@SuppressWarnings("rawtypes") final Set principals) {
+    @Override
+	public void addPrincipals(@SuppressWarnings("rawtypes") final Set principals) {
     }
 
     /**
      * Returns <code>LoginModulePlugin.IMPERSONATION_DEFAULT</code> to indicate
      * that this plugin does not itself handle impersonation requests.
      */
-    public int impersonate(final Principal principal,
+    @Override
+	public int impersonate(final Principal principal,
             final Credentials credentials) {
         return LoginModulePlugin.IMPERSONATION_DEFAULT;
     }

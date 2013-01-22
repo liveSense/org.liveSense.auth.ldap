@@ -61,7 +61,7 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.auth.core.spi.AbstractAuthenticationHandler;
+import org.apache.sling.auth.core.AuthUtil;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.auth.core.spi.DefaultAuthenticationFeedbackHandler;
@@ -89,7 +89,7 @@ import org.slf4j.LoggerFactory;
     @Property(name = AuthenticationHandler.TYPE_PROPERTY, value = LdapAuthenticationHandler.LDAP_AUTH, propertyPrivate = true),
     @Property(name = Constants.SERVICE_RANKING, intValue = 0, propertyPrivate = false) })
 @Service
-public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
+public class LdapAuthenticationHandler extends DefaultAuthenticationFeedbackHandler implements AuthenticationHandler {
 
     public static final String LDAP_AUTH = "Ldap";
 
@@ -382,7 +382,8 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
      * the secure user data is not present either in the cookie or an HTTP
      * Session.
      */
-    public AuthenticationInfo extractCredentials(HttpServletRequest request,
+    @Override
+	public AuthenticationInfo extractCredentials(HttpServletRequest request,
             HttpServletResponse response) {
 
         AuthenticationInfo info = null;
@@ -401,10 +402,10 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
                     // so that the invalid cookie isn't present on the authN
                     // operation.
                     authStorage.clear(request, response);
-                    if (this.loginAfterExpire || isValidateRequest(request)) {
+                    if (this.loginAfterExpire || AuthUtil.isValidateRequest(request)) {
                         // signal the requestCredentials method a previous login
                         // failure
-                        request.setAttribute(FAILURE_REASON, FormReason.TIMEOUT);
+                        request.setAttribute(AuthenticationHandler.FAILURE_REASON, FormReason.TIMEOUT);
                         info = AuthenticationInfo.FAIL_AUTH;
                     }
                 }
@@ -498,7 +499,8 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
      * form. No further checks are applied, though, before sending back the
      * 403/FORBIDDEN response.
      */
-    public boolean requestCredentials(HttpServletRequest request,
+    @Override
+	public boolean requestCredentials(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
         // 0. ignore this handler if an authentication handler is requested
@@ -507,7 +509,7 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
             return false;
         }
 
-        final String resource = setLoginResourceAttribute(request,
+        final String resource = AuthUtil.setLoginResourceAttribute(request,
             request.getRequestURI());
 
         if (includeLoginForm && (resourceResolverFactory != null)) {
@@ -537,17 +539,17 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
         params.put(Authenticator.LOGIN_RESOURCE, resource);
 
         // append indication of previous login failure
-        if (request.getAttribute(FAILURE_REASON) != null) {
-            final Object jReason = request.getAttribute(FAILURE_REASON);
+        if (request.getAttribute(AuthenticationHandler.FAILURE_REASON) != null) {
+            final Object jReason = request.getAttribute(AuthenticationHandler.FAILURE_REASON);
             @SuppressWarnings("rawtypes")
             final String reason = (jReason instanceof Enum)
                     ? ((Enum) jReason).name()
                     : jReason.toString();
-            params.put(FAILURE_REASON, reason);
+            params.put(AuthenticationHandler.FAILURE_REASON, reason);
         }
 
         try {
-            sendRedirect(request, response, loginForm, params);
+            AuthUtil.sendRedirect(request, response, loginForm, params);
         } catch (IOException e) {
             log.error("Failed to redirect to the login form " + loginForm, e);
         }
@@ -559,7 +561,8 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
      * Clears all authentication state which might have been prepared by this
      * authentication handler.
      */
-    public void dropCredentials(HttpServletRequest request,
+    @Override
+	public void dropCredentials(HttpServletRequest request,
             HttpServletResponse response) {
         authStorage.clear(request, response);
     }
@@ -571,7 +574,8 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
      * sure the authentication data is removed either by removing the cookie or
      * by remove the HTTP Session attribute.
      */
-    public void authenticationFailed(HttpServletRequest request,
+    @Override
+	public void authenticationFailed(HttpServletRequest request,
             HttpServletResponse response, AuthenticationInfo authInfo) {
 
         /*
@@ -583,7 +587,7 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
         authStorage.clear(request, response);
 
         // signal the reason for login failure
-        request.setAttribute(FAILURE_REASON, FormReason.INVALID_CREDENTIALS);
+        request.setAttribute(AuthenticationHandler.FAILURE_REASON, FormReason.INVALID_CREDENTIALS);
     }
 
     /**
@@ -599,7 +603,8 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
      * removed from the cookie or the HTTP session and future requests will not
      * be authenticated any longer.
      */
-    public boolean authenticationSucceeded(HttpServletRequest request,
+    @Override
+	public boolean authenticationSucceeded(HttpServletRequest request,
             HttpServletResponse response, AuthenticationInfo authInfo) {
 
         /*
@@ -621,7 +626,7 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
 
             // check whether redirect is requested by the resource parameter
 
-            final String resource = getLoginResource(request, null);
+            final String resource = AuthUtil.getLoginResource(request, null);
             if (resource != null) {
                 try {
                     response.sendRedirect(resource);
@@ -659,7 +664,7 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
      * (HttpServletRequest.FORM_AUTH).
      */
     private boolean ignoreRequestCredentials(final HttpServletRequest request) {
-        final String requestLogin = request.getParameter(REQUEST_LOGIN_PARAMETER);
+        final String requestLogin = request.getParameter(AuthenticationHandler.REQUEST_LOGIN_PARAMETER);
         return requestLogin != null
             && !LDAP_AUTH.equals(requestLogin);
     }
@@ -741,8 +746,9 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
                 // as a POST request to the j_security_check page (unless
                 // the j_validate parameter is set); but only if this is not
                 // a validation request
-                if (!isValidateRequest(request)) {
-                    setLoginResourceAttribute(request, request.getContextPath());
+        	
+                if (!AuthUtil.isValidateRequest(request)) {
+                    AuthUtil.setLoginResourceAttribute(request, request.getContextPath());
                 }
             }
         }
@@ -1093,7 +1099,8 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
             this.defaultCookieDomain = defaultCookieDomain;
         }
 
-        public String extractAuthenticationInfo(HttpServletRequest request) {
+        @Override
+		public String extractAuthenticationInfo(HttpServletRequest request) {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
@@ -1116,7 +1123,8 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
             return null;
         }
 
-        public void set(HttpServletRequest request,
+        @Override
+		public void set(HttpServletRequest request,
                 HttpServletResponse response, String authData, AuthenticationInfo info) {
             // base64 encode to handle any special characters
             String cookieValue;
@@ -1141,7 +1149,8 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
             }
         }
 
-        public void clear(HttpServletRequest request,
+        @Override
+		public void clear(HttpServletRequest request,
                 HttpServletResponse response) {
             Cookie oldCookie = null;
             String oldCookieDomain = null;
@@ -1220,7 +1229,8 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
             this.sessionAttributeName = sessionAttributeName;
         }
 
-        public String extractAuthenticationInfo(HttpServletRequest request) {
+        @Override
+		public String extractAuthenticationInfo(HttpServletRequest request) {
             HttpSession session = request.getSession(false);
             if (session != null) {
                 Object attribute = session.getAttribute(sessionAttributeName);
@@ -1231,14 +1241,16 @@ public class LdapAuthenticationHandler extends AbstractAuthenticationHandler {
             return null;
         }
 
-        public void set(HttpServletRequest request,
+        @Override
+		public void set(HttpServletRequest request,
                 HttpServletResponse response, String authData, AuthenticationInfo info) {
             // store the auth hash as a session attribute
             HttpSession session = request.getSession();
             session.setAttribute(sessionAttributeName, authData);
         }
 
-        public void clear(HttpServletRequest request,
+        @Override
+		public void clear(HttpServletRequest request,
                 HttpServletResponse response) {
             HttpSession session = request.getSession(false);
             if (session != null) {

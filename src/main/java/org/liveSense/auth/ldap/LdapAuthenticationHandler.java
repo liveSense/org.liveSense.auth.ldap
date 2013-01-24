@@ -111,7 +111,7 @@ public class LdapAuthenticationHandler extends DefaultAuthenticationFeedbackHand
 	 */        
 	private static final String PAR_LDAP_BASE = "ldap.base";
 
-	private static final String DEFAULT_LDAP_BASE = "ou=users,ou=system";
+	private static final String DEFAULT_LDAP_BASE = "ou=system";
 
 	@Property(name=PAR_LDAP_BASE, value=DEFAULT_LDAP_BASE)
 	private String ldapBase;
@@ -1027,6 +1027,7 @@ public class LdapAuthenticationHandler extends DefaultAuthenticationFeedbackHand
 		log.info("Setting Ldap Authentication Type {}", ldapAuthenticationType);
 
 		this.autoCreateJcrUser = PropertiesUtil.toBoolean(properties.get(PAR_AUTOCREATE_JCR_USER), DEFAULT_AUTOCREATE_JCR_USER);
+		log.info("Setting AutoCreate JCR user {}", autoCreateJcrUser);
 
 
 	}

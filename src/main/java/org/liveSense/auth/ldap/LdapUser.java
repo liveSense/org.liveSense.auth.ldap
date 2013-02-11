@@ -1,12 +1,21 @@
 package org.liveSense.auth.ldap;
 
+import javax.naming.directory.Attributes;
+
 public class LdapUser {
 
     String userName;
     String jcrUserName;
     String password;
+    Attributes attributes;
     
-    public String getUserName() {
+    public Attributes getAttributes() {
+		return attributes;
+	}
+	public void setAttributes(Attributes attributes) {
+		this.attributes = attributes;
+	}
+	public String getUserName() {
         return userName;
     }
     public void setUserName(String userName) {

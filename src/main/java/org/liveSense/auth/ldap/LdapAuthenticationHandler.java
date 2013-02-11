@@ -32,9 +32,14 @@ import javax.jcr.Credentials;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+import javax.jcr.Value;
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -44,6 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Properties;
@@ -111,7 +117,7 @@ public class LdapAuthenticationHandler extends DefaultAuthenticationFeedbackHand
 	 */        
 	private static final String PAR_LDAP_BASE = "ldap.base";
 
-	private static final String DEFAULT_LDAP_BASE = "ou=system";
+	private static final String DEFAULT_LDAP_BASE = "uid=${userName},ou=system";
 
 	@Property(name=PAR_LDAP_BASE, value=DEFAULT_LDAP_BASE)
 	private String ldapBase;
@@ -263,6 +269,17 @@ public class LdapAuthenticationHandler extends DefaultAuthenticationFeedbackHand
 	@Property(boolValue = DEFAULT_AUTOCREATE_JCR_USER)
 	private static final String PAR_AUTOCREATE_JCR_USER = "ldap.jcr.user.autocreate";
 	private boolean autoCreateJcrUser = DEFAULT_AUTOCREATE_JCR_USER;
+
+	
+	/**
+	 * The LDAP can contains some properties for user for example credentials to access another system. When user logging
+	 * in theese properties copied to JCR's user.
+	 */
+	private static final String[] DEFAULT_USER_ATTRIBUTES = new String[]{};
+	@Property(value = {}, cardinality=Integer.MAX_VALUE)
+	private static final String PAR_USER_ATTRIBUTES = "ldap.jcr.user.attributes";
+	private String[] userAttributes = DEFAULT_USER_ATTRIBUTES;
+
 	/**
 	 * The request method required for user name and password submission by the
 	 * form (value is "POST").
@@ -453,6 +470,42 @@ public class LdapAuthenticationHandler extends DefaultAuthenticationFeedbackHand
 
 
 	/**
+	 * Copy LDAP user properties to JCR User properties
+	 * @param ldapUser
+	 */
+	private void updateUserAttributes(Session session, LdapUser ldapUser, Authorizable user) {
+		// Collecting attribute names
+		try {
+			for (Iterator e = user.getPropertyNames(); e.hasNext();) {
+				user.removeProperty((String)e.next());
+			}
+			
+			for (NamingEnumeration<? extends Attribute> ae = ldapUser.getAttributes().getAll(); ae.hasMore();) {
+				Attribute attr = ae.next();
+				log.info("Attribute: " + attr.getID());
+				// multi value attribute
+				if (attr.size() > 1) {
+					Value[] props = new Value[attr.size()];
+					int i = 0;
+					for (NamingEnumeration e = attr.getAll(); e.hasMore();) {
+						Object o = e.next();
+						if (o instanceof String)
+							props[i] = session.getValueFactory().createValue((String)o);
+						i++;
+					}
+					user.setProperty(attr.getID(), props);
+				} else {
+					if (attr.get(0) instanceof String)
+						user.setProperty(attr.getID(), session.getValueFactory().createValue((String)attr.get(0)));
+				}
+			}
+		} catch (Exception e) {
+			log.error("Could not update user attributes", e);
+		}
+
+	}
+	
+	/**
 	 * Find a JCR Repository user name for the given LdapUser. Uses the name
 	 * from the user identifier. if not found and autoCreate is true, creating
 	 * identifier and JCR user
@@ -513,15 +566,18 @@ public class LdapAuthenticationHandler extends DefaultAuthenticationFeedbackHand
 						user = userManager.getAuthorizable(identity);
 					} catch (Exception e) {
 					}
+					// User already exists, updating properties from LDAP
 					if (user != null && !user.isGroup()) {
 						user.setProperty(identityProperty, session.getValueFactory().createValue(identity));
 						userId = identity;
+						updateUserAttributes(session, ldapUser, user);
 					} else if (user == null) {
 						if (userManager != null) {
 							log.info("Creating user: "+identity+" in JCR Repository");
 							user = userManager.createUser(ldapUser.getUserName(), ldapUser.getPassword());
 							user.setProperty(identityProperty, session.getValueFactory().createValue(identity));
 							userId = identity;
+							updateUserAttributes(session, ldapUser, user);
 						}
 					} else {
 						log.error("The given principal is already exists as Group");
@@ -885,14 +941,17 @@ public class LdapAuthenticationHandler extends DefaultAuthenticationFeedbackHand
 		LdapUser ldapUser = getLdapAuthData(credentials);
 		if (ldapUser != null) {
 			Hashtable<String, String> authEnv = new Hashtable<String, String>(11);
-			String dn = "uid=" + ldapUser.getUserName() + "," + ldapBase;
+			//String dn = "uid=" + ldapUser.getUserName() + "," + ldapBase;
+			String dn = StringUtils.replace(ldapBase, "${userName}", ldapUser.getUserName());
 			authEnv.put(Context.INITIAL_CONTEXT_FACTORY,"com.sun.jndi.ldap.LdapCtxFactory");
 			authEnv.put(Context.PROVIDER_URL, ldapUrl);
 			authEnv.put(Context.SECURITY_AUTHENTICATION, ldapAuthenticationType);
 			authEnv.put(Context.SECURITY_PRINCIPAL, dn);
 			authEnv.put(Context.SECURITY_CREDENTIALS, ldapUser.getPassword());
 			try {
-				new InitialDirContext(authEnv);
+				DirContext ctx = new InitialDirContext(authEnv);
+				Attributes attributes = ctx.getAttributes(dn);
+				ldapUser.setAttributes(attributes);
 				return true;
 			} catch (AuthenticationException authEx) {
 				return false;
@@ -1028,6 +1087,9 @@ public class LdapAuthenticationHandler extends DefaultAuthenticationFeedbackHand
 
 		this.autoCreateJcrUser = PropertiesUtil.toBoolean(properties.get(PAR_AUTOCREATE_JCR_USER), DEFAULT_AUTOCREATE_JCR_USER);
 		log.info("Setting AutoCreate JCR user {}", autoCreateJcrUser);
+
+		this.userAttributes = PropertiesUtil.toStringArray(properties.get(PAR_USER_ATTRIBUTES), DEFAULT_USER_ATTRIBUTES);
+		log.info("Setting User Attributes {}", userAttributes);
 
 
 	}

@@ -117,7 +117,7 @@ public class LdapAuthenticationHandler extends DefaultAuthenticationFeedbackHand
 	 */        
 	private static final String PAR_LDAP_BASE = "ldap.base";
 
-	private static final String DEFAULT_LDAP_BASE = "uid=${userName},ou=system";
+	private static final String DEFAULT_LDAP_BASE = "uid=${userName},ou=users,ou=system";
 
 	@Property(name=PAR_LDAP_BASE, value=DEFAULT_LDAP_BASE)
 	private String ldapBase;
@@ -954,8 +954,8 @@ public class LdapAuthenticationHandler extends DefaultAuthenticationFeedbackHand
 				ldapUser.setAttributes(attributes);
 				return true;
 			} catch (AuthenticationException authEx) {
+				log.error("Authentication failure - "+dn+" Error: "+authEx.getExplanation());
 				return false;
-
 			} catch (NamingException namEx) {
 				throw new RepositoryException("Ldap Error:"+namEx.getExplanation());
 			}

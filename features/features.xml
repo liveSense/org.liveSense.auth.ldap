@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?><features name="liveSense-${liveSense.version}-auth-ldap" xmlns="http://karaf.apache.org/xmlns/features/v1.0.0">
+	<feature name="liveSense-auth-ldap" version="${liveSense.auth.ldap.version}" description="liveSense auth ldap">
+		<bundle>mvn:com.github.livesense/org.liveSense.auth.ldap/${liveSense.auth.ldap.version}</bundle>
+	</feature>
+</features>

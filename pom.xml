@@ -25,11 +25,11 @@
       <version>2-SNAPSHOT</version>
         <relativePath>..</relativePath>
   </parent>
-  <scm>
-      <connection>scm:git:git://github.com/liveSense/org.liveSense.service.securityManager.git</connection>
-      <developerConnection>scm:git:git://github.com/liveSense/org.liveSense.service.securityManager.git</developerConnection>
-      <url>https://github.com/liveSense/org.liveSense.service.securityManager</url>
-  </scm>  
+	<scm>
+		<connection>scm:git:https://github.com/liveSense/org.liveSense.auth.ldap.git</connection>
+		<developerConnection>scm:git:https://github.com/liveSense/org.liveSense.auth.ldap.git</developerConnection>
+		<url>https://github.com/liveSense/org.liveSense.auth.ldap</url>
+	</scm>
 
 	<artifactId>org.liveSense.auth.ldap</artifactId>
 	<packaging>bundle</packaging>

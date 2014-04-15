@@ -22,7 +22,7 @@
   <parent>
       <groupId>com.github.livesense</groupId>
       <artifactId>org.liveSense.parent</artifactId>
-      <version>2-SNAPSHOT</version>
+      <version>1.0.3-SNAPSHOT</version>
         <relativePath>..</relativePath>
   </parent>
 	<scm>
@@ -33,7 +33,6 @@
 
 	<artifactId>org.liveSense.auth.ldap</artifactId>
 	<packaging>bundle</packaging>
-	<version>1.0.0-SNAPSHOT</version>
 	<name>liveSense :: Service :: Authentication :: LDAP</name>
 	<description>
 		liveSense LDAP authentication module.

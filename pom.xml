@@ -25,13 +25,14 @@
       <version>1.0.3</version>
         <relativePath>..</relativePath>
   </parent>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.0.3</version>
 
     <scm>
 		<connection>scm:git:https://github.com/liveSense/org.liveSense.auth.ldap.git</connection>
 		<developerConnection>scm:git:https://github.com/liveSense/org.liveSense.auth.ldap.git</developerConnection>
 		<url>https://github.com/liveSense/org.liveSense.auth.ldap</url>
-	</scm>
+	  <tag>1.0.3</tag>
+  </scm>
 
 	<artifactId>org.liveSense.auth.ldap</artifactId>
 	<packaging>bundle</packaging>

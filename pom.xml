@@ -25,7 +25,9 @@
       <version>1.0.3</version>
         <relativePath>..</relativePath>
   </parent>
-	<scm>
+  <version>1.0.3-SNAPSHOT</version>
+
+    <scm>
 		<connection>scm:git:https://github.com/liveSense/org.liveSense.auth.ldap.git</connection>
 		<developerConnection>scm:git:https://github.com/liveSense/org.liveSense.auth.ldap.git</developerConnection>
 		<url>https://github.com/liveSense/org.liveSense.auth.ldap</url>

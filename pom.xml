@@ -32,6 +32,7 @@
 	</scm>
 
 	<artifactId>org.liveSense.auth.ldap</artifactId>
+  <version>1.0.4-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	<name>liveSense :: Service :: Authentication :: LDAP</name>
 	<description>

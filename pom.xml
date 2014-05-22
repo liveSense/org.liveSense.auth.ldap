@@ -22,10 +22,9 @@
   <parent>
       <groupId>com.github.livesense</groupId>
       <artifactId>org.liveSense.parent</artifactId>
-      <version>1.0.3</version>
+      <version>1.0.4-SNAPSHOT</version>
         <relativePath>..</relativePath>
   </parent>
-  <version>1.0.4-SNAPSHOT</version>
 
     <scm>
 		<connection>scm:git:https://github.com/liveSense/org.liveSense.auth.ldap.git</connection>
